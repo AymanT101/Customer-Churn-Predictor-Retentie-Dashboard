@@ -50,24 +50,58 @@ CUSTOM_CSS = """
 html, body {
     font-family: 'Inter', system-ui, sans-serif;
     color: var(--text-primary);
+    background: #050505;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100%;
 }
 
 .stApp {
     background: #050505;
     color: var(--text-primary);
+    overflow-x: hidden;
+    overflow-y: auto !important;
+    min-height: 100vh;
+    height: auto;
 }
 
-[data-testid="stAppViewContainer"],
-[data-testid="stMain"],
+[data-testid="stAppViewContainer"] {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+    overflow: visible !important;
+    min-height: 100vh;
+    height: auto;
+}
+
+[data-testid="stMain"] {
+    overflow: visible !important;
+    height: auto;
+}
+
 section.main {
     position: relative;
-    z-index: 2;
+    z-index: 1;
     background: transparent;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: 100vh;
 }
 
-/* Subtle background orbs — low opacity so text stays readable */
-.stApp::before,
-.stApp::after {
+.block-container {
+    position: relative;
+    z-index: 1;
+    padding-top: 1.5rem;
+    padding-bottom: 2rem;
+    max-width: 1400px;
+    animation: fadeUp 0.6s ease-out;
+    overflow: visible;
+}
+
+/* Background orbs on body — not on .stApp (avoids scroll trap) */
+body::before,
+body::after {
     content: "";
     position: fixed;
     border-radius: 50%;
@@ -78,7 +112,7 @@ section.main {
     animation: floatOrb 20s ease-in-out infinite;
 }
 
-.stApp::before {
+body::before {
     width: 380px;
     height: 380px;
     top: -100px;
@@ -86,7 +120,7 @@ section.main {
     background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 70%);
 }
 
-.stApp::after {
+body::after {
     width: 320px;
     height: 320px;
     bottom: -80px;
@@ -98,14 +132,6 @@ section.main {
 @keyframes floatOrb {
     0%, 100% { transform: translate(0, 0) scale(1); }
     50% { transform: translate(20px, -15px) scale(1.03); }
-}
-
-.block-container {
-    position: relative;
-    z-index: 2;
-    padding-top: 1.5rem;
-    max-width: 1400px;
-    animation: fadeUp 0.6s ease-out;
 }
 
 @keyframes fadeUp {
@@ -443,8 +469,23 @@ div[data-testid="stSpinner"] p {
     font-weight: 600;
 }
 
-#MainMenu, footer, header[data-testid="stHeader"] {
+#MainMenu {
     visibility: hidden;
+}
+
+header[data-testid="stHeader"] {
+    height: 0;
+    min-height: 0;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+footer {
+    visibility: hidden;
+    height: 0;
+    min-height: 0;
+    overflow: hidden;
 }
 
 hr {
