@@ -1,0 +1,29 @@
+# Render Blueprint — deploy via https://dashboard.render.com/blueprints
+# Connect your GitHub repo and Render creates both services automatically.
+
+services:
+  - type: web
+    name: churn-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.api
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHONPATH
+        value: /app
+
+  - type: web
+    name: churn-dashboard
+    runtime: docker
+    dockerfilePath: ./Dockerfile.dashboard
+    plan: free
+    envVars:
+      - key: PYTHONPATH
+        value: /app
+      - key: USE_API
+        value: "true"
+      - key: API_URL
+        fromService:
+          type: web
+          name: churn-api
+          envVarKey: RENDER_EXTERNAL_URL

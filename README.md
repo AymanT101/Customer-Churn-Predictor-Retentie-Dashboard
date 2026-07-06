@@ -44,8 +44,10 @@ python -m venv .venv
 # 2. Dependencies
 pip install -r requirements.txt
 
-# 3. Data genereren + model trainen
-python -m src.data.generate_data
+# 3. Data + model (kies één)
+python -m src.data.generate_data              # synthetisch (default)
+# python -m src.data.import_real --source telco # echte IBM Telco data
+# python -m src.data.import_real --source file --input jouw.csv
 python -m src.models.train
 
 # 4. API starten (terminal 1)
@@ -67,6 +69,28 @@ docker compose up --build
 Dashboard: http://localhost:8501 · API: http://localhost:8000
 
 Model artifacts and customer data are stored in **named Docker volumes** (`model_artifacts`, `customer_data`) so empty host bind mounts cannot overwrite a trained model. On first startup the API auto-generates data and trains when no model is present.
+
+## Deploy op Render (gratis demo)
+
+1. Push naar GitHub
+2. [Render Blueprint](https://dashboard.render.com/blueprints) → New Blueprint Instance → selecteer repo
+3. Render maakt **churn-api** + **churn-dashboard** aan via `render.yaml`
+
+Zie [docs/DEPLOY_RENDER.md](docs/DEPLOY_RENDER.md) voor details en troubleshooting.
+
+## Dataset keuzes
+
+| Bron | Commando |
+|------|----------|
+| Synthetisch (default) | `python -m src.data.generate_data` |
+| IBM Telco (echte data) | `python -m src.data.import_real --source telco` |
+| Eigen CSV | `python -m src.data.import_real --source file --input jouw.csv` |
+
+Zie [docs/DATASET.md](docs/DATASET.md) voor kolomschema en tips.
+
+## Portfolio video
+
+Demo-script (~2:30 min) voor schermopname: [docs/VIDEO_SCRIPT.md](docs/VIDEO_SCRIPT.md)
 
 ## API voorbeelden
 
