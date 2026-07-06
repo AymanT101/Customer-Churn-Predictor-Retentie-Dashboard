@@ -76,6 +76,15 @@ def load_predictions(_data_version: str) -> pd.DataFrame:
 def load_model_metrics() -> dict | None:
     if METRICS_PATH.exists():
         return json.loads(METRICS_PATH.read_text())
+
+    if USE_API:
+        try:
+            response = requests.get(f"{API_URL}/metrics", timeout=15)
+            if response.status_code == 200:
+                return response.json()
+        except requests.RequestException:
+            pass
+
     return None
 
 
@@ -360,7 +369,10 @@ def main() -> None:
             st.metric("Recall", metrics.get("recall", "—"))
             st.metric("F1-score", metrics.get("f1", "—"))
         else:
-            st.info("Train het model om metrics te zien.")
+            if USE_API:
+                st.info("Model traint nog op de API — metrics verschijnen na ~1 minuut.")
+            else:
+                st.info("Run `python -m src.models.train` om modelmetrics te laden.")
 
         st.divider()
         st.caption(f"Data: {len(customers):,} klanten".replace(",", "."))
