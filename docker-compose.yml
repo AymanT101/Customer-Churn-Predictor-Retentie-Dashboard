@@ -1,0 +1,36 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Named volumes avoid bind-mounting empty host dirs over baked-in artifacts.
+      - model_artifacts:/app/models/artifacts
+      - customer_data:/app/data/raw
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 90s
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile.dashboard
+    ports:
+      - "8501:8501"
+    environment:
+      USE_API: "true"
+      API_URL: "http://api:8000"
+    volumes:
+      - customer_data:/app/data/raw
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  model_artifacts:
+  customer_data:
