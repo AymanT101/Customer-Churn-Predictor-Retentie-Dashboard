@@ -17,7 +17,10 @@ from src.dashboard.theme import (
     RISK_COLORS,
     apply_plotly_theme,
     glass_kpi,
+    glass_text_block,
     inject_theme,
+    render_author_sidebar,
+    render_footer,
     render_hero,
 )
 from src.models.predict import predict_churn
@@ -263,12 +266,7 @@ def render_customer_detail(df: pd.DataFrame) -> None:
     col_a, col_b = st.columns([1, 1])
 
     with col_a:
-        st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
-        st.markdown("**Risicosignalen**")
-        for factor in row["risk_factors"]:
-            st.markdown(f"- {factor}")
-
-        st.markdown("**Aanbevolen acties**")
+        factors = list(row["risk_factors"])
         actions = []
         if row["login_days_last_30"] < 8:
             actions.append("Plan een product walkthrough of training sessie")
@@ -282,9 +280,9 @@ def render_customer_detail(df: pd.DataFrame) -> None:
             actions.append("Stuur gepersonaliseerde onboarding-flow voor underused features")
         if not actions:
             actions.append("Monitor — geen urgente interventie nodig")
-        for action in actions:
-            st.markdown(f"- {action}")
-        st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown(glass_text_block("Risicosignalen", factors), unsafe_allow_html=True)
+        st.markdown(glass_text_block("Aanbevolen acties", actions), unsafe_allow_html=True)
 
     with col_b:
         st.markdown('<div class="chart-glass">', unsafe_allow_html=True)
@@ -366,6 +364,7 @@ def main() -> None:
 
         st.divider()
         st.caption(f"Data: {len(customers):,} klanten".replace(",", "."))
+        render_author_sidebar()
 
     filtered = df[
         (df["risk_level"].isin(risk_filter))
@@ -393,6 +392,8 @@ def main() -> None:
     with tab_detail:
         detail_df = filtered if len(filtered) > 0 else df
         render_customer_detail(detail_df)
+
+    render_footer()
 
 
 if __name__ == "__main__":

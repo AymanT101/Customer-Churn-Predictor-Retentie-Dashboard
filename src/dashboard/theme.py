@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import streamlit as st
 
+AUTHOR_NAME = "Ayman Thomas"
+
 # Risk levels mapped to grayscale (light → critical)
 RISK_COLORS = {
-    "Low": "#737373",
-    "Medium": "#A3A3A3",
-    "High": "#D4D4D4",
-    "Critical": "#FFFFFF",
+    "Low": "#525252",
+    "Medium": "#737373",
+    "High": "#A3A3A3",
+    "Critical": "#E5E5E5",
 }
 
 PLOTLY_LAYOUT = dict(
@@ -21,11 +23,13 @@ PLOTLY_LAYOUT = dict(
         gridcolor="rgba(255,255,255,0.08)",
         linecolor="rgba(255,255,255,0.15)",
         zerolinecolor="rgba(255,255,255,0.08)",
+        tickfont=dict(color="#D4D4D4"),
     ),
     yaxis=dict(
         gridcolor="rgba(255,255,255,0.08)",
         linecolor="rgba(255,255,255,0.15)",
         zerolinecolor="rgba(255,255,255,0.08)",
+        tickfont=dict(color="#D4D4D4"),
     ),
     legend=dict(bgcolor="rgba(255,255,255,0.04)", bordercolor="rgba(255,255,255,0.1)"),
     margin=dict(l=24, r=24, t=48, b=24),
@@ -35,73 +39,140 @@ CUSTOM_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-html, body, [class*="css"] {
+:root {
+    --text-primary: #F5F5F5;
+    --text-secondary: #CFCFCF;
+    --text-muted: #9CA3AF;
+    --glass-bg: rgba(18, 18, 18, 0.72);
+    --glass-border: rgba(255, 255, 255, 0.12);
+}
+
+html, body {
     font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text-primary);
 }
 
 .stApp {
     background: #050505;
-    color: #F5F5F5;
+    color: var(--text-primary);
 }
 
-/* Animated glass background */
+[data-testid="stAppViewContainer"],
+[data-testid="stMain"],
+section.main {
+    position: relative;
+    z-index: 2;
+    background: transparent;
+}
+
+/* Subtle background orbs — low opacity so text stays readable */
 .stApp::before,
 .stApp::after {
     content: "";
     position: fixed;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.35;
+    filter: blur(90px);
+    opacity: 0.12;
     z-index: 0;
     pointer-events: none;
-    animation: floatOrb 18s ease-in-out infinite;
+    animation: floatOrb 20s ease-in-out infinite;
 }
 
 .stApp::before {
-    width: 420px;
-    height: 420px;
-    top: -120px;
-    right: -80px;
-    background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%);
+    width: 380px;
+    height: 380px;
+    top: -100px;
+    right: -60px;
+    background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, transparent 70%);
 }
 
 .stApp::after {
-    width: 360px;
-    height: 360px;
-    bottom: -100px;
-    left: -60px;
-    background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
-    animation-delay: -9s;
+    width: 320px;
+    height: 320px;
+    bottom: -80px;
+    left: -40px;
+    background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, transparent 70%);
+    animation-delay: -10s;
 }
 
 @keyframes floatOrb {
     0%, 100% { transform: translate(0, 0) scale(1); }
-    33% { transform: translate(30px, -20px) scale(1.05); }
-    66% { transform: translate(-20px, 15px) scale(0.95); }
+    50% { transform: translate(20px, -15px) scale(1.03); }
 }
 
 .block-container {
     position: relative;
-    z-index: 1;
+    z-index: 2;
     padding-top: 1.5rem;
     max-width: 1400px;
     animation: fadeUp 0.6s ease-out;
 }
 
 @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Hero header */
+/* ── Global text readability (fix invisible / white-on-white text) ── */
+.stApp p, .stApp span, .stApp li, .stApp label,
+.stApp [data-testid="stMarkdownContainer"] p,
+.stApp [data-testid="stMarkdownContainer"] li,
+.stApp [data-testid="stMarkdownContainer"] span,
+.stApp [data-testid="stMarkdownContainer"] strong,
+.stApp [data-testid="stCaptionContainer"] p {
+    color: var(--text-secondary) !important;
+}
+
+.stApp h1, .stApp h2, .stApp h3, .stApp h4,
+.stApp [data-testid="stMarkdownContainer"] h1,
+.stApp [data-testid="stMarkdownContainer"] h2,
+.stApp [data-testid="stMarkdownContainer"] h3 {
+    color: var(--text-primary) !important;
+}
+
+.stApp [data-testid="stWidgetLabel"] p,
+.stApp [data-testid="stWidgetLabel"] label {
+    color: var(--text-muted) !important;
+    font-size: 0.82rem !important;
+}
+
+.stApp .stSlider label {
+    color: var(--text-muted) !important;
+}
+
+.stApp [data-testid="stAlert"] p,
+.stApp [data-testid="stAlert"] span {
+    color: #E5E5E5 !important;
+}
+
+.stApp [data-testid="stAlert"] {
+    background: rgba(255,255,255,0.06) !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    color: #E5E5E5 !important;
+}
+
+/* Select / multiselect chips */
+.stApp [data-baseweb="select"] > div,
+.stApp [data-baseweb="tag"] {
+    background-color: rgba(255,255,255,0.08) !important;
+    color: var(--text-primary) !important;
+    border-color: rgba(255,255,255,0.15) !important;
+}
+
+.stApp input, .stApp textarea {
+    color: var(--text-primary) !important;
+    background-color: rgba(255,255,255,0.06) !important;
+}
+
+/* Hero */
 .hero-glass {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--glass-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
     border-radius: 20px;
     padding: 1.75rem 2rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
     animation: fadeUp 0.7s ease-out 0.1s both;
 }
 
@@ -109,47 +180,63 @@ html, body, [class*="css"] {
     font-size: 1.85rem;
     font-weight: 700;
     letter-spacing: -0.03em;
-    color: #FFFFFF;
+    color: #FFFFFF !important;
     margin: 0 0 0.35rem 0;
 }
 
 .hero-glass p {
-    color: rgba(255, 255, 255, 0.55);
+    color: #B8B8B8 !important;
     margin: 0;
     font-size: 0.95rem;
 }
 
+.hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    margin-top: 0.85rem;
+}
+
 .hero-badge {
     display: inline-block;
-    margin-top: 0.85rem;
     padding: 0.25rem 0.75rem;
     border-radius: 999px;
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: #FFFFFF;
+    color: #FFFFFF !important;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+.hero-author {
+    font-size: 0.78rem;
+    color: #A3A3A3 !important;
+    letter-spacing: 0.02em;
+}
+
+.hero-author strong {
+    color: #FFFFFF !important;
+    font-weight: 600;
+}
+
 /* Glass panels */
 .glass-panel {
-    background: rgba(255, 255, 255, 0.035);
+    background: var(--glass-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
     border-radius: 16px;
-    padding: 1rem 1.1rem;
+    padding: 1rem 1.15rem;
     margin-bottom: 0.75rem;
-    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    transition: border-color 0.25s ease, transform 0.25s ease;
     animation: fadeUp 0.55s ease-out both;
 }
 
 .glass-panel:hover {
-    border-color: rgba(255, 255, 255, 0.18);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
-    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .glass-panel-title {
@@ -157,28 +244,50 @@ html, body, [class*="css"] {
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.45);
+    color: #9CA3AF !important;
     margin-bottom: 0.35rem;
 }
 
 .glass-panel-value {
     font-size: 1.65rem;
     font-weight: 700;
-    color: #FFFFFF;
+    color: #FFFFFF !important;
     letter-spacing: -0.02em;
 }
 
 .glass-panel-delta {
     font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.5);
+    color: #A3A3A3 !important;
     margin-top: 0.15rem;
 }
 
-/* Sidebar glass */
+.glass-panel h4 {
+    color: #FFFFFF !important;
+    font-size: 0.95rem;
+    margin: 0 0 0.65rem 0;
+}
+
+.glass-panel ul {
+    margin: 0;
+    padding-left: 1.1rem;
+}
+
+.glass-panel li {
+    color: #D4D4D4 !important;
+    margin-bottom: 0.35rem;
+    line-height: 1.45;
+}
+
+/* Sidebar */
 [data-testid="stSidebar"] {
-    background: rgba(8, 8, 8, 0.85);
+    background: rgba(8, 8, 8, 0.92) !important;
     backdrop-filter: blur(24px);
     border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p,
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] strong {
+    color: var(--text-secondary) !important;
 }
 
 [data-testid="stSidebar"] .block-container {
@@ -190,8 +299,33 @@ html, body, [class*="css"] {
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.35);
+    color: #737373 !important;
     margin-bottom: 0.5rem;
+}
+
+.sidebar-author {
+    margin-top: 1.5rem;
+    padding: 0.85rem 1rem;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    text-align: center;
+}
+
+.sidebar-author p {
+    margin: 0 !important;
+    font-size: 0.72rem !important;
+    color: #737373 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.sidebar-author strong {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.95rem !important;
+    color: #FFFFFF !important;
+    letter-spacing: 0.01em;
 }
 
 /* Tabs */
@@ -205,9 +339,8 @@ html, body, [class*="css"] {
 
 .stTabs [data-baseweb="tab"] {
     border-radius: 10px;
-    color: rgba(255, 255, 255, 0.5);
+    color: #737373 !important;
     font-weight: 500;
-    transition: all 0.2s ease;
 }
 
 .stTabs [aria-selected="true"] {
@@ -215,118 +348,107 @@ html, body, [class*="css"] {
     color: #FFFFFF !important;
 }
 
-.stTabs [data-baseweb="tab-panel"] {
-    animation: fadeUp 0.4s ease-out;
-}
-
-/* Metrics override */
+/* Metrics */
 [data-testid="stMetric"] {
-    background: rgba(255, 255, 255, 0.035);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 14px;
     padding: 0.85rem 1rem;
-    transition: border-color 0.2s ease;
-}
-
-[data-testid="stMetric"]:hover {
-    border-color: rgba(255, 255, 255, 0.16);
 }
 
 [data-testid="stMetricLabel"] {
-    color: rgba(255, 255, 255, 0.45) !important;
-    font-size: 0.72rem !important;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    color: #9CA3AF !important;
 }
 
 [data-testid="stMetricValue"] {
     color: #FFFFFF !important;
 }
 
-/* Circle loading spinner */
+/* Circle spinner */
 div[data-testid="stSpinner"] {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    justify-content: center !important;
     gap: 0.75rem !important;
-    padding: 1.5rem !important;
 }
 
-div[data-testid="stSpinner"] svg,
-div[data-testid="stSpinner"] > div > svg {
+div[data-testid="stSpinner"] svg {
     display: none !important;
 }
 
 div[data-testid="stSpinner"]::before {
     content: "";
-    display: block;
     width: 44px;
     height: 44px;
-    border: 2px solid rgba(255, 255, 255, 0.12);
+    border: 2px solid rgba(255,255,255,0.12);
     border-top-color: #FFFFFF;
     border-radius: 50%;
     animation: spin 0.75s linear infinite;
 }
 
-div[data-testid="stSpinner"] p,
-div[data-testid="stSpinner"] span {
-    color: rgba(255, 255, 255, 0.55) !important;
-    font-size: 0.82rem !important;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+div[data-testid="stSpinner"] p {
+    color: #9CA3AF !important;
 }
 
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
 
-/* Chart wrapper */
+/* Charts */
 .chart-glass {
-    background: rgba(255, 255, 255, 0.025);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 0.5rem 0.75rem 0.25rem;
     margin-bottom: 0.5rem;
-    animation: fadeUp 0.5s ease-out both;
 }
 
 /* Dataframe */
 [data-testid="stDataFrame"] {
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
     border-radius: 14px;
     overflow: hidden;
 }
 
-/* Section headers */
+[data-testid="stDataFrame"] [data-testid="glideDataEditor"],
+[data-testid="stDataFrame"] canvas {
+    background: #0A0A0A !important;
+}
+
 .section-title {
     font-size: 1.05rem;
     font-weight: 600;
-    color: #FFFFFF;
+    color: #FFFFFF !important;
     margin: 0.5rem 0 1rem;
-    letter-spacing: -0.01em;
 }
 
-.risk-pill {
-    display: inline-block;
-    padding: 0.15rem 0.55rem;
-    border-radius: 999px;
-    font-size: 0.72rem;
+/* Footer credit */
+.site-footer {
+    margin-top: 2.5rem;
+    padding: 1rem 0 0.5rem;
+    text-align: center;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    animation: fadeUp 0.6s ease-out 0.3s both;
+}
+
+.site-footer p {
+    margin: 0 !important;
+    font-size: 0.78rem !important;
+    color: #737373 !important;
+    letter-spacing: 0.04em;
+}
+
+.site-footer .author-name {
+    color: #FFFFFF !important;
     font-weight: 600;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(255,255,255,0.06);
 }
 
-/* Hide default Streamlit chrome */
 #MainMenu, footer, header[data-testid="stHeader"] {
     visibility: hidden;
 }
 
 hr {
     border-color: rgba(255, 255, 255, 0.08) !important;
-    margin: 1.25rem 0 !important;
 }
 </style>
 """
@@ -338,11 +460,37 @@ def inject_theme() -> None:
 
 def render_hero() -> None:
     st.markdown(
-        """
+        f"""
         <div class="hero-glass">
             <h1>Customer Churn Predictor</h1>
             <p>Retentie dashboard voor customer success — voorspel churn, prioriteer acties, bescherm MRR.</p>
-            <span class="hero-badge">ML · API · Glass UI</span>
+            <div class="hero-meta">
+                <span class="hero-badge">ML · API · Glass UI</span>
+                <span class="hero-author">Made by <strong>{AUTHOR_NAME}</strong></span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_author_sidebar() -> None:
+    st.markdown(
+        f"""
+        <div class="sidebar-author">
+            <p>Made by</p>
+            <strong>{AUTHOR_NAME}</strong>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_footer() -> None:
+    st.markdown(
+        f"""
+        <div class="site-footer">
+            <p>Made by <span class="author-name">{AUTHOR_NAME}</span></p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -361,5 +509,15 @@ def glass_kpi(label: str, value: str, delta: str | None = None, delay: float = 0
         <div class="glass-panel-title">{label}</div>
         <div class="glass-panel-value">{value}</div>
         {delta_html}
+    </div>
+    """
+
+
+def glass_text_block(title: str, items: list[str]) -> str:
+    list_html = "".join(f"<li>{item}</li>" for item in items)
+    return f"""
+    <div class="glass-panel">
+        <h4>{title}</h4>
+        <ul>{list_html}</ul>
     </div>
     """
